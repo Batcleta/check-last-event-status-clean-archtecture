@@ -22,14 +22,21 @@ class CheckLastEventStatus {
   }
 }
 
+const makeSut = () => {
+  const loadLastEventRepository = new LoadLastEventRepositoryMock();
+  const sut = new CheckLastEventStatus(
+    loadLastEventRepository
+
+  ); 
+
+  return {sut, loadLastEventRepository}
+}
+
 describe("CheckLastEventStatus", () => {
   it("should get last event data", async () => {
-    const loadLastEventRepository = new LoadLastEventRepositoryMock();
-    const checkLastEventStatus = new CheckLastEventStatus(
-      loadLastEventRepository
-    ); //arrange
+    const {sut, loadLastEventRepository} = makeSut() //arrange
 
-    await checkLastEventStatus.exec("any__group__id"); //act
+    await sut.exec("any__group__id"); //act
 
     expect(loadLastEventRepository.groupId).toBe("any__group__id"); //assert
     expect(loadLastEventRepository.callsCount).toBe(1); //assert
