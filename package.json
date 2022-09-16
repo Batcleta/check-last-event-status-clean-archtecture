@@ -10,6 +10,7 @@
     "@types/jest": "^29.0.2",
     "@types/node": "^18.7.13",
     "jest": "^29.0.3",
+    "mockdate": "^3.0.5",
     "ts-jest": "^29.0.1",
     "ts-node": "^10.9.1",
     "ts-standard": "^11.0.0",
@@ -18,7 +19,6 @@
   "scripts": {
     "test": "jest --watchAll --config ./jest.config.ts"
   },
-
   "ts-standard": {
     "project": "./tsconfig.json",
     "ignore": [
@@ -27,7 +27,6 @@
       "src/**/*.js"
     ]
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC"
