@@ -25,10 +25,12 @@ class CheckLastEventStatus {
   async exec ({ groupId }: {groupId: string}): Promise<string> {
     if (groupId !== null && groupId !== undefined) {
       const response = await this.loadLastEventRepository.loadLastEvent({ groupId })
-      const currentDate = new Date()
+      const currentDate: Date = new Date()
+      const timeDifference: number = (response?.endDate.getTime() - currentDate.getTime()) * -1
 
-      if (response !== undefined && currentDate < response.endDate) {
-        return 'active'
+      if (response !== undefined) {
+        if (currentDate < response.endDate) return 'active'
+        if (currentDate > response.endDate && timeDifference <= 10) return 'inReview'
       }
 
       return 'done'
@@ -82,5 +84,17 @@ describe('CheckLastEventStatus', () => {
     const status = await sut.exec({ groupId })
     // assert
     expect(status).toBe('active')
+  })
+
+  it('should return status inReview when the current time is tinny greater than the event end time', async () => {
+    // arrange
+    const { sut, loadLastEventRepository } = makeSut()
+    loadLastEventRepository.output = {
+      endDate: new Date(new Date().getTime() - 1)
+    }
+    // act
+    const status = await sut.exec({ groupId })
+    // assert
+    expect(status).toBe('inReview')
   })
 })
