@@ -1,44 +1,53 @@
 interface ILoadLastEventRepository {
-  loadLastEvent(groupId: string):Promise<void>;
+  loadLastEvent: (groupId: string) => Promise<undefined>
 }
 
-class LoadLastEventRepositoryMock implements ILoadLastEventRepository{
-  public groupId?: string;
-  callsCount = 0
+class LoadLastEventRepositorySpy implements ILoadLastEventRepository {
+  public groupId?: string
+  public callsCount = 0
+  public output: undefined
 
-  async loadLastEvent(groupId: string):Promise<void> {
-     this.groupId = groupId
-     this.callsCount ++
+  async loadLastEvent (groupId: string): Promise<undefined> {
+    this.groupId = groupId
+    this.callsCount++
+
+    return this.output
   };
 }
 
 class CheckLastEventStatus {
-  constructor(
+  constructor (
     private readonly loadLastEventRepository: ILoadLastEventRepository
-  ) {} //type class
+  ) {} // type class
 
-  async exec(groupId: string): Promise<void> {
-    this.loadLastEventRepository.loadLastEvent(groupId);
+  async exec (groupId: string): Promise<string> {
+    if (groupId !== null && groupId !== undefined) {
+      await this.loadLastEventRepository.loadLastEvent(groupId)
+      return 'done'
+    }
   }
 }
 
-const makeSut = () => {
-  const loadLastEventRepository = new LoadLastEventRepositoryMock();
-  const sut = new CheckLastEventStatus(
-    loadLastEventRepository
+describe('CheckLastEventStatus', () => {
+  it('should get last event data', async () => {
+    // arrange
+    const loadLastEventRepository = new LoadLastEventRepositorySpy()
+    const sut = new CheckLastEventStatus(loadLastEventRepository)
+    // Act
+    await sut.exec('any__group__id') // act
+    // Assert
+    expect(loadLastEventRepository.groupId).toBe('any__group__id')
+    expect(loadLastEventRepository.callsCount).toBe(1)
+  })
 
-  ); 
-
-  return {sut, loadLastEventRepository}
-}
-
-describe("CheckLastEventStatus", () => {
-  it("should get last event data", async () => {
-    const {sut, loadLastEventRepository} = makeSut() //arrange
-
-    await sut.exec("any__group__id"); //act
-
-    expect(loadLastEventRepository.groupId).toBe("any__group__id"); //assert
-    expect(loadLastEventRepository.callsCount).toBe(1); //assert
-  });
-});
+  it('should return status done when group has no event', async () => {
+    // arrange
+    const loadLastEventRepository = new LoadLastEventRepositorySpy()
+    const sut = new CheckLastEventStatus(loadLastEventRepository)
+    loadLastEventRepository.output = undefined
+    // act
+    const status = await sut.exec('any__group__id')
+    // assert
+    expect(status).toBe('done')
+  })
+})
